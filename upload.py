@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 import os
 import hashlib
-from main import servers
+from state import servers  # <- import servers from state.py
 
 router = APIRouter()
 UPLOAD_DIR = "storage/servers"

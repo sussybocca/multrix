@@ -3,7 +3,6 @@ import subprocess
 import os
 
 router = APIRouter()
-
 SERVER_DIR = "storage/servers"
 
 @router.post("/sandbox/run/{server_id}")

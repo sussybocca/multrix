@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from models import Server  # root import
+from models import Server
+from state import servers
 from upload import router as upload_router
 from sandbox import router as sandbox_router
 
 app = FastAPI(title="Multrix")
 
-# Enable CORS for dev/testing
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,12 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# In-memory servers
-servers = [
-    Server(id=1, name="Example Server 1", owner="Alice", description="Demo server", files=[]),
-    Server(id=2, name="Example Server 2", owner="Bob", description="Another demo", files=[])
-]
 
 # JSON model for creating server
 class ServerCreateRequest(BaseModel):
