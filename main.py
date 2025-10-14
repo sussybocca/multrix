@@ -1,15 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from models import Server  # <- changed from backend.models
+from models import Server  # root import
+from upload import router as upload_router
+from sandbox import router as sandbox_router
 
 app = FastAPI(title="Multrix")
 
-# Allow frontend to call backend (for dev)
+# Enable CORS for dev/testing
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow all origins for dev
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,7 +30,6 @@ class ServerCreateRequest(BaseModel):
     owner: str
 
 # --- Backend API ---
-
 @app.get("/servers")
 async def list_servers():
     return [s.dict() for s in servers]
@@ -46,5 +48,13 @@ async def get_server(server_id: int):
             return s.dict()
     return {"error": "Server not found"}
 
-# --- Serve frontend from root ---
-app.mount("/", StaticFiles(directory=".", html=True), name="frontend")
+# --- Include routers ---
+app.include_router(upload_router)
+app.include_router(sandbox_router)
+
+# --- Serve frontend ---
+app.mount("/static", StaticFiles(directory=".", html=True), name="frontend")
+
+@app.get("/")
+async def root():
+    return FileResponse("index.html")

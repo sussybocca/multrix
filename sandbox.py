@@ -13,7 +13,6 @@ async def run_code(server_id: int, filename: str):
         raise HTTPException(status_code=404, detail="File not found")
 
     try:
-        # Run Python code in subprocess safely (sandbox stub)
         result = subprocess.run(
             ["python3", path],
             capture_output=True,

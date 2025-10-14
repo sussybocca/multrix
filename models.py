@@ -6,6 +6,7 @@ class Server(BaseModel):
     name: str
     owner: str
     description: Optional[str] = None
+    files: list[str] = []
 
 class Project(BaseModel):
     id: int
