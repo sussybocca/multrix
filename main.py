@@ -7,6 +7,7 @@ from models import Server
 from state import servers
 from upload import router as upload_router
 from sandbox import router as sandbox_router
+import os
 
 app = FastAPI(title="Multrix")
 
@@ -47,9 +48,10 @@ async def get_server(server_id: int):
 app.include_router(upload_router)
 app.include_router(sandbox_router)
 
-# --- Serve frontend ---
-app.mount("/static", StaticFiles(directory=".", html=True), name="frontend")
+# --- Serve frontend from root ---
+app.mount("/", StaticFiles(directory=".", html=True), name="frontend")
 
+# Optional explicit root route for index.html
 @app.get("/")
 async def root():
     return FileResponse("index.html")
