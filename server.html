@@ -5,8 +5,30 @@
 <title>Multrix Server</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+<style>
+  #apikey-modal {
+    display: flex;
+    position: fixed; top: 0; left:0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); justify-content: center; align-items: center;
+    z-index: 1000;
+  }
+  #apikey-content {
+    background: white; padding: 20px; text-align: center; border-radius: 8px;
+  }
+  textarea { width: 100%; }
+</style>
 </head>
 <body>
+
+<div id="apikey-modal">
+  <div id="apikey-content">
+    <p>To access the site, copy your API key below (27 seconds to copy):</p>
+    <input type="text" id="api-key-input" value="aksth$5:&@dfhafkotn" readonly>
+    <p id="timer">27</p>
+    <button onclick="copyApiKey()">Copy API Key</button>
+  </div>
+</div>
+
 <h1 id="server-name">Server</h1>
 
 <h2>Upload File</h2>
@@ -16,10 +38,15 @@
 <h2>Files</h2>
 <ul id="file-list"></ul>
 
-<h2>Python Editor</h2>
-<textarea id="editor" rows="10" cols="80">print("Hello from Multrix!")</textarea><br>
-<button onclick="runCode()">Run Code</button>
-<pre id="output"></pre>
+<h2>Python Editor 1</h2>
+<textarea id="editor1" rows="10" cols="80">print("Hello from Editor 1")</textarea><br>
+<button onclick="runCode('editor1', 'output1')">Run Code</button>
+<pre id="output1"></pre>
+
+<h2>Python Editor 2</h2>
+<textarea id="editor2" rows="10" cols="80">print("Hello from Editor 2")</textarea><br>
+<button onclick="runCode('editor2', 'output2')">Run Code</button>
+<pre id="output2"></pre>
 
 <script>
 let pyodideReady = false;
@@ -30,6 +57,27 @@ async function loadPyodideLib() {
     pyodideReady = true;
 }
 loadPyodideLib();
+
+// API key modal
+let timer = 27;
+const timerElem = document.getElementById("timer");
+const modal = document.getElementById("apikey-modal");
+
+const interval = setInterval(() => {
+    timer--;
+    timerElem.textContent = timer;
+    if (timer <= 0) {
+        clearInterval(interval);
+        modal.style.display = "none";
+    }
+}, 1000);
+
+function copyApiKey() {
+    const input = document.getElementById("api-key-input");
+    input.select();
+    document.execCommand("copy");
+    alert("API key copied! You have 27 seconds to paste it.");
+}
 
 // Get server ID from URL
 const params = new URLSearchParams(window.location.search);
@@ -72,15 +120,15 @@ async function uploadFile() {
     fetchServerFiles();
 }
 
-// Run Python code
-async function runCode() {
+// Run Python code for any editor
+async function runCode(editorId, outputId) {
     if(!pyodideReady) return alert("Pyodide not loaded yet");
-    const code = document.getElementById("editor").value;
+    const code = document.getElementById(editorId).value;
     try {
         let output = await pyodide.runPythonAsync(code);
-        document.getElementById("output").textContent = output ?? "";
+        document.getElementById(outputId).textContent = output ?? "";
     } catch(e) {
-        document.getElementById("output").textContent = e;
+        document.getElementById(outputId).textContent = e;
     }
 }
 </script>

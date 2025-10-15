@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from models import Server
 from state import servers
 from upload import router as upload_router
 from sandbox import router as sandbox_router
-import os
+import io
+import sys
 
 app = FastAPI(title="Multrix")
 
@@ -19,6 +20,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Hardcoded API key
+API_KEY = "aksth$5:&@dfhafkotn"
 
 # JSON model for creating server
 class ServerCreateRequest(BaseModel):
@@ -47,6 +51,27 @@ async def get_server(server_id: int):
 # --- Include routers ---
 app.include_router(upload_router)
 app.include_router(sandbox_router)
+
+# --- Python code execution endpoint ---
+class CodeRequest(BaseModel):
+    code: str
+
+@app.post("/run-python")
+async def run_python(req: CodeRequest):
+    old_stdout = sys.stdout
+    redirected_output = sys.stdout = io.StringIO()
+    try:
+        exec(req.code, {"__builtins__": {}})
+    except Exception as e:
+        sys.stdout = old_stdout
+        return JSONResponse(content={"error": str(e)})
+    sys.stdout = old_stdout
+    return {"output": redirected_output.getvalue()}
+
+# --- API key endpoint ---
+@app.get("/get-api-key")
+async def get_api_key():
+    return {"api_key": API_KEY}
 
 # --- Serve frontend from root ---
 app.mount("/", StaticFiles(directory=".", html=True), name="frontend")
